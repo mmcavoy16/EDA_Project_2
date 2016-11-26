@@ -1,0 +1,66 @@
+---
+title: "Surviving Heart Attacks in the US"
+author: "Caleb Dowdy"
+date: "November 26, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(DT)
+```
+
+```{r Import Data, include = FALSE}
+readDeath <- read.csv("~/Documents/Classes/EDA/RWorkspace/groupProject2/Readmissions and Deaths - Hospital.csv", na.strings = "")
+timelyCare <- read.csv("~/Documents/Classes/EDA/RWorkspace/groupProject2/Timely and Effective Care - Hospital.csv", na.strings = "") 
+
+dataframe <-read.csv("~/Documents/Classes/EDA/RWorkspace/groupProject2/dataframe.csv", na.strings = "")
+```
+
+```{r Subset on Heart Attacks, include=FALSE}
+readDeath <- readDeath %>%
+  filter(Measure.Name=="Acute Myocardial Infarction (AMI) 30-Day Mortality Rate")
+
+timelyCare <- timelyCare %>%
+  filter(Condition=="Heart Attack or Chest Pain")
+
+dataframe <- dataframe %>%
+  filter(measure_name=="Acute Myocardial Infarction (AMI) 30-Day Mortality Rate")
+```
+
+```{r Correct Types, include=FALSE}
+readDeath$Denominator<-as.numeric(as.character(readDeath$Denominator))
+readDeath$Score<-as.numeric(as.character(readDeath$Score))
+
+dataframe$denominator<-as.numeric(as.character(dataframe$denominator))
+dataframe$score<-as.numeric(as.character(dataframe$score))
+dataframe$cardiovascular <- as.integer(as.character(dataframe$cardiovascular))
+```
+
+
+```{r Total Death Column, include=FALSE}
+readDeath <-mutate(readDeath,totalDeath = Denominator*Score)
+
+dataframe <- mutate(dataframe, totalDeath = score/denominator)
+```
+
+
+```{r, echo=FALSE}
+datatable(na.omit(select(dataframe, hospital_name, state, county, denominator, score, totalDeath, cardiovascular)), class='compact')
+```
+
+```{r Visualizing, echo=FALSE, message=FALSE, warning=FALSE}
+log_death <- ggplot(dataframe, aes(log(totalDeath)))
+log_death + geom_density(kernel="gaussian")+theme_minimal()
+
+death <- ggplot(dataframe, aes(totalDeath))
+death + geom_histogram() + theme_minimal()
+
+score <- ggplot(dataframe, aes(score))
+score + geom_histogram() + theme_minimal()
+```
+
+
+

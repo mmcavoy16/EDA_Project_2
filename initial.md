@@ -15,12 +15,17 @@ Readmissions and Deaths: 30-Day Readmission and Death Measures
 30-Day "Death Measure" is an estimate of how many patients died within 30-days of being admitted to a given hospital.
 
 - `denominator` : total number of patients with a given measure (ie. AMI)
-- `score`: estimated number of deaths (for a given measure) divided by `denominator` 
+- `score`: estimates of death within 30-days of a hospital admission 
 
 ## Variables that would be nice...
 
 - AED(Automatic External Defibrillator) per capita OR by county
 - CPR Training Rate by county 
 
-Looks like several medical journals have obtained some of the variables above, but only with special permission from the American Heart Association. 
+Looks like several medical journals have obtained some of the variables above, but only with special permission from the American Heart Association.
+
+## For The Worst Counties...
+
+What makes them similar?
+How is the hospital ranked? 
 
