@@ -29,4 +29,4 @@ general_readmin <- inner_join(general_group, readmin30_group, by='Location')
 # select only complete cases and find cor
 gnrm_group <- general_readmin[complete.cases(general_readmin),]
 cor(gnrm_group$avgRating, gnrm_group$avgScr)
-
+ggplot(data=gnrm_group, aes(x=avgScr, y=avgRating)) + geom_point() +geom_smooth(method='lm')
