@@ -51,7 +51,7 @@ dataframe <- mutate(dataframe, totalrate = score/denominator)
 
 
 ```{r, echo=FALSE}
-datatable(na.omit(select(dataframe, hospital_name, state, county, denominator, score, totalrate, cardiovascular)), class='compact',filter = "top")
+datatable(na.omit(select(dataframe, hospital_name, state, county, denominator, score, totalrate, cardiovascular)), class='compact')
 ```
 
 ```{r Visualizing, echo=FALSE, message=FALSE, warning=FALSE}
@@ -62,8 +62,28 @@ death <- ggplot(dataframe, aes(totalrate))
 death + geom_histogram() + theme_minimal()
 
 score <- ggplot(dataframe, aes(score))
-score + geom_histogram() + theme_minimal()
+score + geom_histogram(bins = 20) + xlab("RSMRs(%)") + theme_minimal()
 ```
+
+
+# RSMR 
+
+`RSMR` $= \frac{"predicted"}{"expected"}\times National \ MR$ 
+
+- **Expected number of deaths for a given hospital**:  $P(p_{i}) =  \frac{1}{1+e^{-(\beta_{i}X_{i}+\overline{H}))}}$
+
+- **Predicted number of deaths for a given hospital**: $P(p_{i}) =  \frac{1}{1+e^{-(\beta_{i}X_{i}+H_{i}))}}$
+
+$\sum_{i=1}^{n} P(p_{i})$ 
+
+- $X_{i}$ is a vector of patient i's characterics; age, sex, past medical history, etc.
+- $\overline{H}$: Average hospital specific effect
+- $H_{i}$: Hospital specific effect
+- $\beta_{i}$: Regression Coefficient 
+
+
+## Significance 
+Upper and lower bounds are provide for death rate in which the true rate lies with 95% certianty.  Confidence intervals for `RSMR` were calculated via bootstrapping with replacement. 
 
 
 
