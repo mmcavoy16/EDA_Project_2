@@ -1,0 +1,71 @@
+---
+title: "Project 2"
+author: "Matthew McAvoy"
+date: "November 27, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+Load data
+```{r}
+full_data <- read.csv("Data_concise/mmcavoy_data.csv")
+```
+
+## Variables
+```{r}
+str(full_data)
+```
+State - State is missing Maryland since the files 'Complications - State.csv' and 'Readmissions and Deaths - State.csv' have NA's in MD lines. Probably a privacy issue.
+
+Avg.Overall.Score - From 'Hospital General Information.csv'. Summarizes more than 60 measures reported on Hospital Compare into a single rating. Seven groups: mortality, safety of care, readmission, patient experience, effectiveness of care, timelineess of care, and efficient use of medical imaging.
+
+Avg.Payment - From 'Payment and Value of Care - Hospital.csv'. Assess Medicare Part A and Part B payments for services. Are price-standardized and risk-adjusted. Purpose is to see whether payments for treatments at a particular hospital is less than or no different than the national average. I've aggregated hospital prices to reflect state prices.
+
+Ques.Avg.Score and Ques.Std.Score - From 'HCAHPS - State.csv'. At the state level, a questionarre scored a state. Some questions were 'room was "always clean"', and 'Doctors "always" communicated well'. Averaged score for pertinent questions. Also standardized where 0 is average and anything positive is better than average.
+
+Timely.Std.Score - From 'Timely and Effective Care - State.csv'. Timely.Score is typically the number of minutes waited for treatment. Some measures were in percent so needed to standarize by averaging the score for each measure to see relative performance for each state for each measure. Then standarized all of the measures by state. Will need assistance in seeing if this is the right way to do it or not.
+
+Compl.Ratio.Same and Compl.Ratio.Better - From 'Complications - State.csv'. Measures were complications like 'Blood stream infection after surgery' and 'Serious blood clots after surgery'. At the state level, the number of hospitals that performed worse, the same, or better compared to the national average was stored. The ratio of Same or better is for each category over total number of hospitals for that state and then averaged by state.
+
+Death.Ratio.Same and Death.Ratio.Better - From 'Readmissions and Deaths - State.csv'. Measures were 'Rate of readmission for stroke patients' and rate of readmission after discharge from hospital'. Calculated in the same was as complications.
+
+
+
+## First look at relationship of overall score to chosen components.
+
+Histograms of variables
+```{r}
+ggplot(data=full_data) + geom_histogram(aes(x=Avg.Overall.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Avg.Payment))
+ggplot(data=full_data) + geom_histogram(aes(x=avg_score))
+ggplot(data=full_data) + geom_histogram(aes(x=Ques.Std.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Timely.Std.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Compl.Ratio.Same))
+ggplot(data=full_data) + geom_histogram(aes(x=Compl.Ratio.Better))
+ggplot(data=full_data) + geom_histogram(aes(x=Death.Ratio.Same))
+ggplot(data=full_data) + geom_histogram(aes(x=Death.Ratio.Better))
+```
+
+Relationship between overall score to chosen variables.
+```{r}
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Avg.Payment))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Ques.Avg.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Ques.Std.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Timely.Std.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Compl.Ratio.Same))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Compl.Ratio.Better))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Death.Ratio.Same)) #strongest
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Death.Ratio.Better))
+```
+
+Initial exploration shows states that charge more for MI treatments (to a degree) and states that perform better in reducing deaths and readmissions are related to overall score. An explanation for costs might be more expensive operations in these states were performed that have a higher chance of saving a patients life than in others. An explanation for the deaths relationship might be that less deaths overall will include reducing deaths by heart attack.
+
