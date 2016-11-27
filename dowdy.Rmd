@@ -4,6 +4,9 @@ author: "Caleb Dowdy"
 date: "November 26, 2016"
 output: html_document
 ---
+## Readmission and Death Measures
+The 30-day unplanned readmission measures are estimates of unplanned readmission to any acute care
+hospital within 30 days of discharge from a hospitalization for any cause related to medical conditions,including heart attack (AMI), heart failure (HF), pneumonia (PN), chronic obstructive pulmonary disease (COPD), and stroke (STK); and surgical procedures, including hip/knee replacement and cornary artery bypass graft (CABG). The 30-day unplanned hospital-wide readmission measure focuses on whether patients who were discharged from a hospitalization were hospitalized again within 30 days. The hospital-wide readmission measure includes all medical, surgical and gynecological, neurological, cardiovascular, and cardiorespiratory patients. The 30-day death measures are estimates of deaths within 30-days of a hospital admission from any cause related to medical conditions, including heart attack, heart failure, pneumonia, COPD, and stroke; and surgical procedures, including CABG. Hospitals’ rates are compared to the national rate to determine if hospitals’ performance on these measures is better than the national rate (lower), no different than the national rate, or worse than the national rate (higher). For some hospitals, the number of cases is too small to reliably compare their results to the national average rate. CMS chose to measure death within 30 days instead of inpatient deaths to use a more consistent measurement time window because length of hospital stay varies across patients and hospitals. Rates are provided in the downloadable databases as decimals and typically indicate information that is presented on the Hospital Compare website as percentages. Lower percentages for readmission and mortality are better.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -43,19 +46,19 @@ dataframe$cardiovascular <- as.integer(as.character(dataframe$cardiovascular))
 ```{r Total Death Column, include=FALSE}
 readDeath <-mutate(readDeath,totalDeath = Denominator*Score)
 
-dataframe <- mutate(dataframe, totalDeath = score/denominator)
+dataframe <- mutate(dataframe, totalrate = score/denominator)
 ```
 
 
 ```{r, echo=FALSE}
-datatable(na.omit(select(dataframe, hospital_name, state, county, denominator, score, totalDeath, cardiovascular)), class='compact')
+datatable(na.omit(select(dataframe, hospital_name, state, county, denominator, score, totalrate, cardiovascular)), class='compact',filter = "top")
 ```
 
 ```{r Visualizing, echo=FALSE, message=FALSE, warning=FALSE}
-log_death <- ggplot(dataframe, aes(log(totalDeath)))
+log_death <- ggplot(dataframe, aes(log(totalrate)))
 log_death + geom_density(kernel="gaussian")+theme_minimal()
 
-death <- ggplot(dataframe, aes(totalDeath))
+death <- ggplot(dataframe, aes(totalrate))
 death + geom_histogram() + theme_minimal()
 
 score <- ggplot(dataframe, aes(score))
