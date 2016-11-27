@@ -153,7 +153,7 @@ deaths_qs <- deaths_qj2 %>%
 	mutate(Death.Ratio.Better = Sum.Better/Sum.Total) %>%
 	select(State, Death.Ratio.Same, Death.Ratio.Better)
 #deaths_qs %>% arrange(Death.Ratio.Same) %>% View()
-
+View(deaths_q)
 
 #------------- Load ratings data -------------
 ratings <- read.csv("Data/Hospital General Information.csv")
@@ -208,12 +208,49 @@ payments_qs <- payments_q3 %>% group_by(State) %>%
 str(payments_qs)
 #View(payments_qs)
 
-------------- Merge data -------------
+#------------- Merge data -------------#
 dim(ques_qs); dim(timely_qs); dim(complies_qs); dim(deaths_qs); dim(ratings_qs); dim(payments_qs)
 str(ques_qs); str(timely_qs); str(complies_qs); str(deaths_qs); str(ratings_qs); str(payments_qs)
 
 full_data <- ques_qs %>% inner_join(timely_qs) %>% 
 		inner_join(complies_qs) %>% inner_join(deaths_qs) %>%
 		inner_join(ratings_qs) %>% inner_join(payments_qs)
+full_data <- full_data %>% select(State, Avg.Overall.Score, Avg.Payment, avg_score, Ques.Std.Score, Timely.Std.Score, Compl.Ratio.Same, Compl.Ratio.Better, Death.Ratio.Same, Death.Ratio.Better)
 dim(full_data); View(full_data)
+
+
+
+#------------- Graphics -------------#
+# Maryland is missing
+
+dp <- prcomp(full_data[,-1], center=TRUE, scale=TRUE)
+print(dp)
+summary(dp)
+
+ggplot(data=full_data) + geom_histogram(aes(x=Avg.Overall.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Avg.Payment))
+ggplot(data=full_data) + geom_histogram(aes(x=avg_score))
+ggplot(data=full_data) + geom_histogram(aes(x=Ques.Std.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Timely.Std.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Compl.Ratio.Same))
+ggplot(data=full_data) + geom_histogram(aes(x=Compl.Ratio.Better))
+ggplot(data=full_data) + geom_histogram(aes(x=Death.Ratio.Same))
+ggplot(data=full_data) + geom_histogram(aes(x=Death.Ratio.Better))
+
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Avg.Payment))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=avg_score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Ques.Std.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Timely.Std.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Compl.Ratio.Same))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Compl.Ratio.Better))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Death.Ratio.Same)) #strongest
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Death.Ratio.Better))
+
+
+# Initial exploration shows states that cost more (to a degree) and states 
+# that perform better in reducing deaths and readmissions (measured by 
+# number of hospitals in that state that perform the same as average nationally
+# over total number of hospitals in that state. Generally, less deaths overall
+# will include reducing deaths by heart attack.
+
 
