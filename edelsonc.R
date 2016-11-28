@@ -8,7 +8,7 @@ readmin30_0 <- read_csv("Readmissions and Deaths - Hospital.csv", na=na_list)
 image <- read_csv("Outpatient Imaging Efficiency - Hospital.csv", na=na_list)
 timely <- read_csv("Timely and Effective Care - Hospital.csv", na=na_list)
 
-# general filter and group by county
+# general filter and group by county...add a factor to indicate if repsonse time if above average, average, or below average
 general <- general %>% mutate(Location = paste(`County Name`, State)) %>% mutate(Timely=as.integer(as.factor(`Timeliness of care national comparison`)))
 general_group <- general %>% select(one_of(c("Location", "Hospital overall rating", "Timely"))) %>% group_by(Location) %>% summarise(avgRating = mean(`Hospital overall rating`, na.rm=TRUE), avgTime = as.integer(mean(Timely, rm.na=TRUE)))
 
@@ -50,6 +50,18 @@ gn_rd <- general_rd %>% filter(!(is.na(avgScr)) & !(is.na(avgRating)) & !(is.na(
 cor(gn_rd[c(2,4:7)])  # cor for all numeric variables
 p2 <- ggplot(data=general_rd, aes(x=avgRating, y=avgScr_r)) + geom_point() +geom_smooth(method='lm')  # plot to confirm
 
+# run a lm to check this again
+lm_rating_scr_r <- lm(avgScr_r ~ avgRating, data=gn_rd)
+anova(lm_rating_scr_r)
+
 # plot both graphs to see the negative correlation with trendline
 library(gridExtra)
 grid.arrange(p1, p2, ncol=1)
+
+# attempt an ancova...
+ancova_dt <- lm(avgScr ~ avgRating + as.factor(avgTime), data=gn_rd)
+summary(ancova_dt)
+
+# compare the ancova with the restricted model
+lm_rating_scr_tm <- lm(avgScr ~ avgRating, data=general_readmin[complete.cases(general_readmin$avgTime),])
+anova(lm_rating_scr_tm, ancova_dt)  # just barely significant...worth it?
