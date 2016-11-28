@@ -47,10 +47,10 @@ str(ques_q)
 # grep "always", "did", "Strongly Agree", "10", 'definitely recommend', 
 # filter on 50 states
 ques_q <- ques_q %>% filter(str_detect(Question, '"always"|"did"|"Strongly Agree"|"10",definitely recommend'))
-ques_qs <- ques_q %>% group_by(State) %>% summarise(avg_score = mean(Ans.Percent)) %>%
-	mutate(Ques.Std.Score = (avg_score - mean(avg_score))/avg_score)
+ques_qs <- ques_q %>% group_by(State) %>% summarise(Ques.Avg.Score = mean(Ans.Percent)) %>%
+	mutate(Ques.Std.Score = (Ques.Avg.Score - mean(Ques.Avg.Score))/Ques.Avg.Score)
 
-#View(ques_qs)
+View(ques_qs)
 
 
 #------------- Load timely data -------------#
@@ -153,7 +153,7 @@ deaths_qs <- deaths_qj2 %>%
 	mutate(Death.Ratio.Better = Sum.Better/Sum.Total) %>%
 	select(State, Death.Ratio.Same, Death.Ratio.Better)
 #deaths_qs %>% arrange(Death.Ratio.Same) %>% View()
-
+View(deaths_q)
 
 #------------- Load ratings data -------------
 ratings <- read.csv("Data/Hospital General Information.csv")
@@ -208,12 +208,51 @@ payments_qs <- payments_q3 %>% group_by(State) %>%
 str(payments_qs)
 #View(payments_qs)
 
-------------- Merge data -------------
+
+
+#------------- Merge data -------------#
 dim(ques_qs); dim(timely_qs); dim(complies_qs); dim(deaths_qs); dim(ratings_qs); dim(payments_qs)
 str(ques_qs); str(timely_qs); str(complies_qs); str(deaths_qs); str(ratings_qs); str(payments_qs)
 
 full_data <- ques_qs %>% inner_join(timely_qs) %>% 
 		inner_join(complies_qs) %>% inner_join(deaths_qs) %>%
 		inner_join(ratings_qs) %>% inner_join(payments_qs)
+full_data <- full_data %>% select(State, Avg.Overall.Score, Avg.Payment, Ques.Avg.Score, Ques.Std.Score, Timely.Std.Score, Compl.Ratio.Same, Compl.Ratio.Better, Death.Ratio.Same, Death.Ratio.Better)
 dim(full_data); View(full_data)
+
+write.csv(full_data, "Data_concise/mmcavoy_data.csv")
+
+#------------- Graphics -------------#
+# Maryland is missing
+
+dp <- prcomp(full_data[,-1], center=TRUE, scale=TRUE)
+print(dp)
+summary(dp)
+
+ggplot(data=full_data) + geom_histogram(aes(x=Avg.Overall.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Avg.Payment))
+ggplot(data=full_data) + geom_histogram(aes(x=Ques.Avg.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Ques.Std.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Timely.Std.Score))
+ggplot(data=full_data) + geom_histogram(aes(x=Compl.Ratio.Same))
+ggplot(data=full_data) + geom_histogram(aes(x=Compl.Ratio.Better))
+ggplot(data=full_data) + geom_histogram(aes(x=Death.Ratio.Same))
+ggplot(data=full_data) + geom_histogram(aes(x=Death.Ratio.Better))
+
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Avg.Payment))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Ques.Avg.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Ques.Std.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Timely.Std.Score))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Compl.Ratio.Same))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Compl.Ratio.Better))
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Death.Ratio.Same)) #strongest
+ggplot(data=full_data, aes(y=Avg.Overall.Score)) + geom_smooth(aes(x=Death.Ratio.Better))
+
+
+# Initial exploration shows states that cost more (to a degree) and states 
+# that perform better in reducing deaths and readmissions (measured by 
+# number of hospitals in that state that perform the same as average nationally
+# over total number of hospitals in that state. Generally, less deaths overall
+# will include reducing deaths by heart attack.
+
 
