@@ -9,8 +9,8 @@ image <- read_csv("Outpatient Imaging Efficiency - Hospital.csv", na=na_list)
 timely <- read_csv("Timely and Effective Care - Hospital.csv", na=na_list)
 
 # general filter and group by county...add a factor to indicate if repsonse time if above average, average, or below average
-general <- general %>% mutate(Location = paste(`County Name`, State)) %>% mutate(Timely=as.integer(as.factor(`Timeliness of care national comparison`)))
-general_group <- general %>% select(one_of(c("Location", "Hospital overall rating", "Timely"))) %>% group_by(Location) %>% summarise(avgRating = mean(`Hospital overall rating`, na.rm=TRUE), avgTime = as.integer(mean(Timely, rm.na=TRUE)))
+general <- general %>% mutate(Location = paste(`County Name`, State)) %>% mutate(Timely=(as.factor(`Timeliness of care national comparison`)))
+general_group <- general %>% select(one_of(c("Location", "Hospital overall rating", "Timely"))) %>% mutate(Timely = as.integer(Timely)) %>% group_by(Location) %>% summarise(avgRating = mean(`Hospital overall rating`, na.rm=TRUE), avgTime = as.integer(mean(Timely, rm.na=TRUE)))
 
 ggplot(data=general_group, aes(avgTime)) + geom_bar()
 ggplot(data=general_group, aes(avgRating)) + geom_histogram()
@@ -38,7 +38,7 @@ summary(lm_rating_scr)
 
 
 # readmin30 filter and group by county for readmission
-readmin30_r <- readmin30_0 %>% mutate(Location = paste(`County Name`, State)) %>% filter(`Measure ID`=="READM_30_HF")
+readmin30_r <- readmin30_0 %>% mutate(Location = paste(`County Name`, State)) %>% filter(`Measure ID`=="READM_30_AMI")
 readmin30_r <- readmin30_r %>% select(19, 13, 12) %>% group_by(Location) %>% summarize(avgScr_r=mean(Score, na.rm=TRUE), avgDnm_r = mean(Denominator, na.rm=TRUE))
 
 # join new frame with old combined
@@ -47,7 +47,7 @@ str(general_rd)
 
 # find complete cases and cor
 gn_rd <- general_rd %>% filter(!(is.na(avgScr)) & !(is.na(avgRating)) & !(is.na(avgScr_r)))
-cor(gn_rd[c(2,4:7)])  # cor for all numeric variables
+cor(gn_rd[c(2,4,5)])  # cor for all numeric variables
 p2 <- ggplot(data=general_rd, aes(x=avgRating, y=avgScr_r)) + geom_point() +geom_smooth(method='lm')  # plot to confirm
 
 # run a lm to check this again
@@ -62,6 +62,24 @@ grid.arrange(p1, p2, ncol=1)
 ancova_dt <- lm(avgScr ~ avgRating + as.factor(avgTime), data=gn_rd)
 summary(ancova_dt)
 
+# ANOVA for score and time
+anova_dt <- lm(avgScr ~ as.factor(avgTime), data=gn_rd)
+anova(anova_dt)  # not a significant decider in score... p = 0.34
+
+
 # compare the ancova with the restricted model
 lm_rating_scr_tm <- lm(avgScr ~ avgRating, data=general_readmin[complete.cases(general_readmin$avgTime),])
-anova(lm_rating_scr_tm, ancova_dt)  # just barely significant...worth it?
+anova(lm_rating_scr_tm, ancova_dt)  # just barely significant...Rating is strong covarient
+
+# finally look at imaging
+optics_group <-  image %>% mutate(Location = paste(`County Name`, State))
+optics_group <- optics_group %>% select(15,11) %>% group_by(Location) %>% summarise(avgScr_im = mean(Score, na.rm=TRUE))
+
+# merge with original and plot and look at cor
+optic_general <- inner_join(readmin30_group, optics_group, by='Location')
+optic_cor <- optic_general %>% filter(!(is.na(avgScr)) & !(is.na(avgScr_im)))
+cor(optic_cor$avgScr, optic_cor$avgScr_im)  # no correlation
+ggplot(data=optic_general, aes(x=avgScr_im, y=avgScr)) + geom_point() + geom_smooth(method='lm')  # plot confirm
+
+
+# !!! ITS A RISK SCORE !!! LOWER IS BETTER !!!
