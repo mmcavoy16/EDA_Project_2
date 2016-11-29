@@ -52,7 +52,8 @@ p2 <- ggplot(data=general_rd, aes(x=avgRating, y=avgScr_r)) + geom_point() +geom
 
 # run a lm to check this again
 lm_rating_scr_r <- lm(avgScr_r ~ avgRating, data=gn_rd)
-anova(lm_rating_scr_r)
+summary(lm_rating_scr_r)
+plot(lm_rating_scr_r)
 
 # plot both graphs to see the negative correlation with trendline
 library(gridExtra)
