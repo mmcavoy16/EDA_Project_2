@@ -45,6 +45,11 @@ readmin30_r <- readmin30_r %>% select(19, 13, 12) %>% group_by(Location) %>% sum
 general_rd <- inner_join(general_readmin, readmin30_r, by='Location')
 str(general_rd)
 
+
+#######################################################################
+# A few simple models
+#######################################################################
+
 # find complete cases and cor
 gn_rd <- general_rd %>% filter(!(is.na(avgScr)) & !(is.na(avgRating)) & !(is.na(avgScr_r)))
 cor(gn_rd[c(2,4,5)])  # cor for all numeric variables
@@ -58,6 +63,10 @@ plot(lm_rating_scr_r)
 # plot both graphs to see the negative correlation with trendline
 library(gridExtra)
 grid.arrange(p1, p2, ncol=1)
+
+#######################################################################
+# ANOVA and ANCOVA
+#######################################################################
 
 # attempt an ancova...
 ancova_dt <- lm(avgScr ~ avgRating + as.factor(avgTime), data=gn_rd)
@@ -84,14 +93,16 @@ ggplot(data=optic_general, aes(x=avgScr_im, y=avgScr)) + geom_point() + geom_smo
 
 # !!! ITS A RISK SCORE !!! LOWER IS BETTER !!!
 
-df = read.csv("median_income.csv", header=FALSE)
-headers = c("County", "2013", "2014", "2015")
-# transform all to caps
-names(df) <- headers
+#######################################################################
+# MEDIAN INCOME
+#######################################################################
 
-for (state in df$County){
-  if (state %in% state.name){
-    print(state)
-  }
-}
+med <- read.csv("../Median/location_median.csv")
+med_join <- med %>% select(3,4)
+death_med <- inner_join(readmin30_group, med_join, "Location")
 
+# check to see if there is anything here
+ggplot(data=death_med, aes(x=INC110213, y=avgScr)) + geom_point() + geom_smooth(method='lm')
+cor(death_med[complete.cases(death_med),]$avgScr, death_med[complete.cases(death_med),]$INC110213)
+lm_death_md <- lm(avgScr ~ INC110213, data=death_med)
+summary(lm_death_md)  # once again, F-stat good, R^2 bad...
