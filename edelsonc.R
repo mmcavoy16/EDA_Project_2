@@ -82,5 +82,16 @@ optic_cor <- optic_general %>% filter(!(is.na(avgScr)) & !(is.na(avgScr_im)))
 cor(optic_cor$avgScr, optic_cor$avgScr_im)  # no correlation
 ggplot(data=optic_general, aes(x=avgScr_im, y=avgScr)) + geom_point() + geom_smooth(method='lm')  # plot confirm
 
-
 # !!! ITS A RISK SCORE !!! LOWER IS BETTER !!!
+
+df = read.csv("median_income.csv", header=FALSE)
+headers = c("County", "2013", "2014", "2015")
+# transform all to caps
+names(df) <- headers
+
+for (state in df$County){
+  if (state %in% state.name){
+    print(state)
+  }
+}
+

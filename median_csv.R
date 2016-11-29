@@ -1,0 +1,7 @@
+setwd("/Users/edelsonc/Desktop/Data_Science/Group_EDA/EDA_Project_2/data")
+library(tidyverse)
+df = read.csv("Median/median_county_income.csv")
+df$area_name <- df$area_name %>% sapply(toupper)
+df$area_name <- gsub(' COUNTY','', df$area_name)
+df <- df %>% mutate(Location = paste(area_name, state_abbreviation)
+write.csv(df, "Median/medain_income_location.csv", row.names=FALSE)
