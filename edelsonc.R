@@ -140,3 +140,27 @@ df_obesity <- inner_join(gn_rd, obesity_county[c(3,5)], by="Location")
 ggplot(data=df_obesity, aes(x=avgPercent, y=avgScr)) + geom_point() + geom_smooth(method='lm')
 obesity_lm <- lm(avgScr ~ avgPercent, data=df_obesity)
 summary(obesity_lm)  # something at least
+
+#######################################################################
+# Population Density
+#######################################################################
+
+# read in csv and create location
+pop <- read_csv("../Median/pop3.csv")
+pop$Location<- gsub('\ County', '', pop$area_name) %>% sapply(toupper) %>% paste(pop$state_abbreviation)
+
+# inner join to make new frame
+df_pop <- inner_join(pop[c(3,4)], gn_rd, by='Location')
+
+# check dist...see weird, remove 1.5 IQR outliers...because easy
+ggplot(data=df_pop, aes(Pop_Density)) + geom_histogram()
+pop_IQR <-IQR(df_pop$Pop_Density)[[1]]
+pop_med <- median(df_pop$Pop_Density)
+df_pop_no <- df_pop[ df_pop$Pop_Density < 1.5*pop_IQR + pop_med   | df_pop$Pop_Density < pop_med - 1.5*pop_IQR,]
+ggplot(data=df_pop_no, aes(Pop_Density)) + geom_histogram()
+
+# plot and look at lm
+ggplot(data=df_pop_no, aes(x=Pop_Density, y=avgScr)) + geom_point() + geom_smooth(method='lm')
+pop_den_lm <- lm(avgScr ~ Pop_Density, data=df_pop_no)
+summary(pop_den_lm)
+
