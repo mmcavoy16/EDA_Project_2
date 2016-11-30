@@ -61,8 +61,11 @@ log_death + geom_density(kernel="gaussian")+theme_minimal()
 death <- ggplot(dataframe, aes(totalrate))
 death + geom_histogram() + theme_minimal()
 
+denom <- ggplot(dataframe, aes(denominator))
+denom + geom_histogram() + theme_minimal()
+
 score <- ggplot(dataframe, aes(score))
-score + geom_histogram(bins = 20) + xlab("RSMRs(%)") + theme_minimal()
+score + geom_histogram(bins = 25) + xlab("RSMRs(%)") + theme_minimal()
 ```
 
 
@@ -84,6 +87,135 @@ $\sum_{i=1}^{n} P(p_{i})$
 
 ## Significance 
 Upper and lower bounds are provide for death rate in which the true rate lies with 95% certianty.  Confidence intervals for `RSMR` were calculated via bootstrapping with replacement. 
+
+
+```{r}
+countyfacts <- read.csv("~/Documents/Classes/EDA/Data/2016-us-election/countyfacts.csv")
+dict<- read.csv("~/Documents/Classes/EDA/Data/2016-us-election/county_facts_dictionary.csv")
+
+test = list(dict$description)
+
+names(countyfacts)<-c("fips","county","state",as.character(unlist(test)))
+unlist(test)
+
+countyfacts$county <- as.factor(gsub(" County","",countyfacts$county))
+countyfacts<- countyfacts %>%
+  filter(state!="")
+
+countyfacts$county <- stringr::str_to_upper(countyfacts$county)
+
+data_test <- full_join(dataframe,countyfacts, by=c("county","state"))
+
+t <- ggplot(data_test, aes(y=score,x=cardiovascular))
+t + geom_point() 
+
+mod1<-lm(formula = score ~ `Homeownership rate, 2009-2013`, data = data_test)
+plot(mod1)
+```
+
+```{r HEALTH}
+data(state)
+health <- read.csv("~/Documents/Classes/EDA/RWorkspace/groupProject2/scripts/EDA_Project_2/data/health.csv", na.strings = "")
+
+test<- as.data.frame(state.name)
+tmp<- as.data.frame(state.abb)
+test<- bind_cols(test,tmp)
+names(test)<- c("state.name","state")
+
+data_test <- full_join(data_test , test, by ="state")
+
+health$county <- stringr::str_to_upper(health$county)
+
+data_test <- full_join(data_test, health, by =c("state.name","county"))
+write.csv(data_test,file="master.csv")
+```
+
+```{r SCORE VS SMOKES}
+
+t <- ggplot(data_test, aes(y=score,x=X..Smokers))
+t + geom_point() + geom_smooth()
+
+smokemod <- lm(score~X..Smokers,data=data_test)
+summary(smokemod)
+plot(smokemod)
+```
+
+```{r SCORE VS FAT}
+
+t <- ggplot(data_test, aes(y=score,x=X..Obese))
+t + geom_point() + geom_smooth()
+
+obesemod <- lm(score~X..Obese,data=data_test)
+summary(obesemod)
+plot(obesemod)
+```
+
+```{r SCORE VS DRINK}
+t <- ggplot(data_test, aes(y=score,x=Excessive.drinking...Excessive.Drinking))
+t + geom_point() + geom_smooth()
+
+drinkmod <- lm(score~Excessive.drinking...Excessive.Drinking,data=data_test)
+summary(drinkmod)
+plot(drinkmod)
+```
+
+```{r Score VS Food }
+t <- ggplot(data_test, aes(y=score,x=Food.Environment.Index))
+t + geom_point() + geom_smooth()
+
+foodmod <- lm(score~Food.Environment.Index,data=data_test)
+summary(foodmod)
+plot(foodmod)
+```
+
+```{r SCORE VS ACTIVITY}
+
+t <- ggplot(data_test, aes(y=score,x=X..Physically.Inactive))
+t + geom_point() + geom_smooth()
+
+phsmod <- lm(score~X..Physically.Inactive,data=data_test)
+summary(phsmod)
+plot(phsmod)
+```
+
+```{r SCORE ~ SMOKE + OBESE}
+smod <- lm(score~X..Obese+`Median household income, 2009-2013`,data=data_test)
+summary(smod)
+plot(smod)
+
+```
+
+```{r}
+
+library(MASS)
+fit <- lm(score~X..Obese +
+                    `Median household income, 2009-2013`+
+                    X..Physically.Inactive +
+                    X..Smokers +
+                    Food.Environment.Index +
+                    cardiovascular, data=data_test)
+summary(fit)
+step$anova # display results
+# All Subsets Regression
+library(leaps)
+attach(data_test)
+leaps<-regsubsets(score~X..Obese 
+                    `Median household income, 2009-2013`+
+                    X..Physically.Inactive + 
+                    X..Smokers + 
+                    Food.Environment.Index + 
+                    Excessive.drinking...Excessive.Drinking +
+                    cardiovascular
+                  ,data=data_test,nbest=10)
+# view results 
+summary(leaps)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+plot(leaps,scale="r2")
+# plot statistic by subset size 
+library(car)
+subsets(leaps, statistic="rsq")
+```
 
 
 
