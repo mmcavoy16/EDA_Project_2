@@ -78,7 +78,7 @@ anova(anova_dt)  # not a significant decider in score... p = 0.34
 
 
 # compare the ancova with the restricted model
-lm_rating_scr_tm <- lm(avgScr ~ avgRating, data=general_readmin[complete.cases(general_readmin$avgTime),])
+lm_rating_scr_tm <- lm(avgScr ~ avgRating, data=gn_rd[complete.cases(gn_rd$avgTime),])
 anova(lm_rating_scr_tm, ancova_dt)  # just barely significant...Rating is strong covarient
 
 # finally look at imaging
@@ -106,3 +106,37 @@ ggplot(data=death_med, aes(x=INC110213, y=avgScr)) + geom_point() + geom_smooth(
 cor(death_med[complete.cases(death_med),]$avgScr, death_med[complete.cases(death_med),]$INC110213)
 lm_death_md <- lm(avgScr ~ INC110213, data=death_med)
 summary(lm_death_md)  # once again, F-stat good, R^2 bad...
+
+#######################################################################
+# OBESITY
+#######################################################################
+
+# load data and find average percentage for all years
+obesity <- read.csv("../obesity.txt", sep='\t')
+obesity[seq(5,68,7)] <- obesity %>% select(seq(5,68,7)) %>% mutate_each(funs(as.character)) %>% mutate_each(funs(as.numeric))
+obesity <- obesity %>% mutate(avgPercent = (percent + percent.1 + percent.2 + percent.3 + percent.4 + percent.5 + percent.6 + percent.7 + percent.8 + percent.9)/10)
+
+# create new frame and Location columns
+obesity_county <- obesity %>% select(1,3,74)
+
+obesity_county$County <- sapply(as.character(obesity_county$County), toupper)
+obesity_county$County <- gsub("\ COUNTY", "", obesity_county$County)
+
+get_abv = function(state_name){
+  # returns the abbreviation of a state
+  if (state_name %in% state.name){
+    name = state.abb[[match(state_name, state.name)]]
+    return(name)}
+
+  else {return(NA)}
+}
+
+# create abbreviation column and location, then form new df by joining to rest of data
+obesity_county$State_abv <- sapply(obesity_county$State, get_abv)
+obesity_county <- obesity_county %>% mutate(Location = paste(County, State_abv))
+df_obesity <- inner_join(gn_rd, obesity_county[c(3,5)], by="Location")
+
+# plot the relationship between Obesity and DS and investigate linear model
+ggplot(data=df_obesity, aes(x=avgPercent, y=avgScr)) + geom_point() + geom_smooth(method='lm')
+obesity_lm <- lm(avgScr ~ avgPercent, data=df_obesity)
+summary(obesity_lm)  # something at least
