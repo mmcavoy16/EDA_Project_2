@@ -1,0 +1,130 @@
+---
+title: "Project 2 Hospitals and MI's"
+author: "Matthew McAvoy"
+date: "November 30, 2016"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r include=FALSE}
+library(tidyverse)
+library(stringr)
+library(ggrepel)
+
+setwd("C:/Users/homur/OneDrive/New College/EDA/Project2")
+data <- read.csv("Data_concise/merged_data.csv")
+```
+
+## Overall Score
+<span style="color:midnightblue">$\uparrow$</span> Overall.Score - Summarizes more than 60 measures reported on Hospital Compare into a single rating. 
+Seven groups:
+
+- Mortality
+- Safety of care
+- Readmission
+- Patient experience
+- Effectiveness of care
+- Timeliness of care
+- Efficient use of medical imaging
+
+## Variables
+
+Location - US Counties.
+
+<span style="color:deepskyblue">$\downarrow$</span> Compl.Score - Measures were complications like 'Blood stream infection after surgery' and 'Serious blood clots after surgery'. 
+
+<span style="color:darkcyan">$\uparrow$</span> Quests.Score - A questionnaire scored a hospital on a star system of 1-5. Some questions were 'room was "always clean"', and 'Doctors "always" communicated well'.
+
+<span style="color:royalblue">$\downarrow$</span> Infects.score - Includes blood stream infections, UTI's, infections after surgery, and MRSA and C.Diff (Clostridium difficile) infections.
+
+<span style="color:orchid">$\uparrow$</span> Spends.Score - Medicare Hospital Spending per patient. (Larger better?)
+
+## Variables
+<span style="color:steelblue">$\downarrow$</span> Images.score - Such imaging as Cat scans of abdomens, MRI's of spines, and mammography follow-up rates. Up or down?
+
+<span style="color:mediumslateblue">$\downarrow$</span> Values.Payment - Assess Medicare Part A and Part B payments for services. Are price-standardized and risk-adjusted. Purpose is to see whether payments for treatments at a particular hospital is less than or no different than the national average. Retained only payments for acute MI's.
+
+<span style="color:blue">$\downarrow$</span> Deaths.Score - Retained measure Acute MI 30 day mortality rate. 
+
+<span style="color:cyan">$\downarrow$</span> Timely.Score -  Typically the number of minutes waited for treating MI's by use of fibrinolytic therapy, transfer to another facility for better treatent, Aspirin on arrival, or time to ECG.
+
+
+## Relationship of overall score to groups, comparing top and bottom 20 counties
+```{r}
+top_score <- data %>% arrange(desc(Overall.Score)) %>% slice(1:20)
+bottom_score <- data %>% arrange(Overall.Score) %>% slice(1:20)
+
+bottom_top <- bind_rows(top_score %>% mutate(Rank = "Top"), bottom_score %>% mutate(Rank = "Bottom"))
+
+```
+
+## Rank to Overall Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Overall.Score, color=Rank))
+```
+
+## Rank to Questionnaire Stars
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Quests.Stars, color=Rank))
+```
+
+## Rank to Complications
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Compl.Score, color=Rank))
+```
+
+## Rank to Infections Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Infects.Score, color=Rank))
+```
+
+## Rank to Spending Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Spends.Score, color=Rank))
+```
+
+## Rank to Payment Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Values.Payment, color=Rank))
+```
+
+## Rank to Deaths Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Deaths.Score, color=Rank))
+```
+
+## Rank to Timely Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Timely.Score, color=Rank))
+```
+
+## Boxplot summary
+See general trend of overall top ranked counties have lower scores (lower is better) compared to worst ranked counties.
+
+## State level
+Aggregated on States to find States with the best overall score and the lowest Death score.
+```{r}
+state_data <- data %>% mutate(State = str_extract(Location, "\\s..$"))
+state_score <- state_data %>% group_by(State) %>% summarise(State.Overall.Score = mean(Overall.Score), State.Deaths.Score = mean(Deaths.Score))
+```
+
+## State level by Overall Score
+```{r}
+ggplot(data = state_score, aes(x=State, y=State.Overall.Score)) + 
+		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4)
+```
+
+## State level by Death Score
+```{r}
+ggplot(data = state_score, aes(x=State, y=State.Deaths.Score)) + 
+		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4)
+```
+
+## Summary of State level
+North Dakota has a very high death score and Rhode Island, Utah, and Delaware have a small death score.
+
+
