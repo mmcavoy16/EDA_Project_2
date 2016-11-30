@@ -164,3 +164,27 @@ ggplot(data=df_pop_no, aes(x=Pop_Density, y=avgScr)) + geom_point() + geom_smoot
 pop_den_lm <- lm(avgScr ~ Pop_Density, data=df_pop_no)
 summary(pop_den_lm)
 
+#######################################################################
+# Multilinear
+#######################################################################
+pairs(df_obesity[c(2,4,8)])
+
+mlm <- lm(avgScr ~ avgRating + avgPercent, data=df_obesity)
+summary(mlm)
+plot(mlm)
+
+# just for the hell of it
+mlm_df <- lm(avgScr/2 + avgScr_r/2 ~ avgRating + avgPercent, data=df_obesity)
+summary(mlm_df)
+plot(mlm_df)
+
+# even more parameters!
+df_all <- inner_join(df_obesity, death_med[c("Location", "INC110213")])
+
+mlm_drm <- lm(avgScr ~ avgRating + avgPercent + INC110213, data=df_all)
+summary(mlm_drm) # nope...does nothing
+
+# make sure this is best model...it is...
+step(mlm, direction="both")
+step(mlm_df, directin="both")
+
