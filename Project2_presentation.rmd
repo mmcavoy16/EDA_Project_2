@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(stringr)
 library(ggrepel)
+library(datasets)
 
 setwd("C:/Users/homur/OneDrive/New College/EDA/Project2")
 data1 <- read.csv("Data_concise/merged_data.csv")
@@ -21,8 +22,74 @@ data <- read.csv("Data_concise/edelsonc_merged.csv")
 
 na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
 quests <- read_csv("Data/HCAHPS - Hospital.csv", na=na_list)
+
+
+completeness <- function(dataframe) {
+  df <- bind_rows(
+    lapply(dataframe, function(x) {
+      data.frame(nmiss=sum(is.na(x)),
+                 n=length(x),
+                 completeness= 1 - (sum(is.na(x))/length(x)))
+    })
+  )
+  cbind(colname=colnames(dataframe), df)
+}
+
+na_list <- c("", " ", "Not Available", "NA", "NAN", "Not Applicable")
+
+process_csv <- function(file_name) {
+  df <- read.csv(file_name, na.strings=na_list)
+  df$State <- as.character(df$State)
+  fifty <- which(df$State %in% state.abb)
+  datareturn <- df[fifty,]
+  return(datareturn)
+}
+
+mortality_types <- c("Acute Myocardial Infarction (AMI) 30-Day Mortality Rate",
+                     "Heart failure (HF) 30-Day Mortality Rate")
+
+df_surveys <- process_csv("Data/HCAHPS - Hospital.csv")
+df_death <- process_csv("Data/Readmissions and Deaths - Hospital.csv")
+df_ratings <- process_csv("Data/Hospital General Information.csv")
+df_payments <- process_csv("Data/Payment and Value of Care - Hospital.csv")
+df_timely <- process_csv("Data/Timely and Effective Care - Hospital.csv")
+
+plotCompleteness <- function(data_frame, title) {
+  completion_df <- completeness(data_frame)
+  ggplot(completion_df, aes(x=reorder(factor(colname), completeness), y=completeness)) + 
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+}
+
+df_death_subset_ami <- df_death %>%
+  filter(Measure.Name == "Acute Myocardial Infarction (AMI) 30-Day Mortality Rate")
+
+df_death_subset_hf <- df_death %>%
+  filter(Measure.Name == "Heart failure (HF) 30-Day Mortality Rate")
+
+death_completeness <- completeness(df_death)
+death_completeness_ami <- completeness(df_death_subset_ami)
+death_completeness_hf <- completeness(df_death_subset_hf)
+
+completeness_ami_by_state <- df_death_subset_ami %>%
+  group_by(State) %>%
+  summarise(nmiss=sum(is.na(Score)),
+            n=length(Score),
+            completeness=1-(sum(is.na(Score))/length(Score)))
+
+completeness_by_state_all <- df_death %>%
+  group_by(State) %>%
+  summarise(nmiss=sum(is.na(Score)),
+            n=length(Score),
+            completeness=1-(sum(is.na(Score))/length(Score)))
+  
+completeness_ami_by_state$subset_type <- "Myocardial Infarction"
+completeness_by_state_all$subset_type <- "All"
 ```
 # Introduction
+
+## Question of Investigation
+Where is a good or bad place to have a heart attack?
 
 ## Statement of Thesis
 Higher rated counties are better places to have heart attacks
@@ -61,6 +128,36 @@ Aggregated into County
   <li>Halved Number Rows (4800 $\rightarrow$ 2000)</li>
 </ul>
 </ul>
+
+## Completeness
+
+Missing values show up in several forms:
+
+* ""
+* " "
+* Not Available
+* NA
+* NAN
+* Not Applicable
+
+## Completeness of flat files
+
+```{r }
+plotCompleteness(df_surveys)
+```
+
+## Completeness of flat files
+```{r}
+plotCompleteness(df_death)
+```
+
+## Completeness by state
+
+```{r }
+ggplot(rbind(completeness_ami_by_state, completeness_by_state_all),
+       aes(x=reorder(State, completeness), y=completeness, color=subset_type)) +
+  geom_point(size=2) + theme(axis.text.x=element_blank())
+```
 
 # Quantifying "Worst"
 
@@ -299,8 +396,13 @@ grid.arrange(p1, p2, ncol=2)
 - Poor R<sup>2</sup> ( < 0.08) but Strong F-Statistic
 
 
-## Loss of data
-```{r}
-dim(data1); dim(data); dim(state_score)
-```
+## Conclusion
+With an overall score already computed, better counties are better places to have heart attacks, supporting our initial hypothesis
+
+
+## Thoughts and Further Investigations
+- Broader data set
+- More variables, preferably not already standardized
+
+- Closing remarks
 
