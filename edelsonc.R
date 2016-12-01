@@ -30,7 +30,7 @@ general_readmin <- inner_join(general_group, readmin30_group, by='Location')
 # select only complete cases and find cor between avgRating by county and avgScr by county
 gnrm_group <- general_readmin %>% filter(!(is.na(avgScr)) & !(is.na(avgRating)))
 cor(gnrm_group$avgRating, gnrm_group$avgScr)  # negative correlation of -0.21
-p1 <- ggplot(data=general_readmin, aes(x=avgRating, y=avgScr)) + geom_point() +geom_smooth(method='lm')  # plot to confirm
+ggplot(data=general_readmin, aes(x=avgRating, y=avgScr)) + geom_point() +geom_smooth(method='lm')  # plot to confirm
 
 # run a linear model to check this
 lm_rating_scr <- lm(avgScr ~ avgRating, data=general_readmin)
@@ -63,6 +63,7 @@ plot(lm_rating_scr_r)
 # plot both graphs to see the negative correlation with trendline
 library(gridExtra)
 grid.arrange(p1, p2, ncol=1)
+
 
 #######################################################################
 # ANOVA and ANCOVA
