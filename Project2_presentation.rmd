@@ -7,6 +7,7 @@ output: ioslides_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+setwd("/Users/edelsonc/Desktop/Data_Science/Group_EDA/EDA_Project_2/Data_concise")
 ```
 
 
@@ -15,7 +16,7 @@ library(tidyverse)
 library(stringr)
 library(ggrepel)
 
-setwd("C:/Users/homur/OneDrive/New College/EDA/Project2")
+
 data <- read.csv("Data_concise/merged_data.csv")
 ```
 
@@ -168,19 +169,20 @@ state_data <- data %>% mutate(State = str_extract(Location, "\\s..$"))
 state_score <- state_data %>% group_by(State) %>% summarise(State.Overall.Score = mean(Overall.Score), State.Deaths.Score = mean(Deaths.Score))
 ```
 
-## State level by Overall Score
-```{r}
-ggplot(data = state_score, aes(x=State, y=State.Overall.Score)) + 
-		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4)
-```
 
-## State level by Death Score
-```{r}
-ggplot(data = state_score, aes(x=State, y=State.Deaths.Score)) + 
-		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4)
-```
+<!-- ## State level by Overall Score -->
+<!-- ```{r} -->
+<!-- #ggplot(data = state_score, aes(x=State, y=State.Overall.Score)) +  -->
+<!-- 		#geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4) -->
+<!-- ``` -->
 
-## Summary of State level
-North Dakota has a very high death score and Rhode Island, Utah, and Delaware have a small death score.
+<!-- ## State level by Death Score -->
+<!-- ```{r} -->
+<!-- ggplot(data = state_score, aes(x=State, y=State.Deaths.Score)) +  -->
+<!-- 		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4) -->
+<!-- ``` -->
+
+<!-- ## Summary of State level -->
+<!-- North Dakota has a very high death score and Rhode Island, Utah, and Delaware have a small death score. -->
 
 

@@ -39,3 +39,43 @@ summary(lm_md)
 ```
 
 ## Granularity
+Data Comes in Three Levels
+
+- National
+- State
+- Hospital
+
+Aggregated into County
+
+<ul>
+<li>National level too fuzzy, hospital too fine</li>
+<li>Averaging behavior </li>
+<ul>
+  <li>Halved Number Rows (4800 $\rightarrow$ 2000)</li>
+</ul>
+</ul>
+
+## Effect of Overall Rating on Death Score
+
+- Nice if Overall Rating was related to Death Score
+
+## Effect of Overall Rating on Death Score
+
+- Nice if Overall Rating was related to Death Score
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+setwd("/Users/edelsonc/Desktop/Data_Science/Group_EDA/EDA_Project_2/Data_concise")
+library(tidyverse)
+na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
+df_c <- read_csv("edelsonc_merged.csv")
+
+
+ggplot(data=df_c, aes(x=Overall.Score, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Average County Overall Rating") + ylab("Death Score")
+```
+
+***
+
+```{r, warning=FALSE, message=FALSE}
+lm_rd <- lm(Deaths.Score ~ Overall.Score, data=df_c)
+summary(lm_rd)
+```
