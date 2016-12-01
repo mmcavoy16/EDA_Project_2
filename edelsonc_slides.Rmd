@@ -10,34 +10,6 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```
 
-
-## Rate vs Death Score
-
-```{r, waring=FALSE, message=FALSE}
-setwd("/Users/edelsonc/Desktop/Data_Science/Group_EDA/EDA_Project_2/Data_concise")
-library(tidyverse)
-na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
-df_c <- read_csv("edelsonc_merged.csv")
-
-
-ggplot(data=df_c, aes(x=Overall.Score, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm')
-
-lm_rd <- lm(Deaths.Score ~ Overall.Score, data=df_c)
-summary(lm_rd)
-
-# obesity
-ggplot(data=df_c, aes(x=Percent.Population.Obese, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm')
-
-lm_od <- lm(Deaths.Score ~ Percent.Population.Obese, data = df_c)
-summary(lm_rd)
-
-# median income
-ggplot(data=df_c, aes(x=Median.Income, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm')
-
-lm_md <- lm(Deaths.Score ~ Median.Income, data=df_c) 
-summary(lm_md)
-```
-
 ## Granularity
 Data Comes in Three Levels
 
