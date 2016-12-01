@@ -135,28 +135,63 @@ Missing values show up in several forms:
 
 * ""
 * " "
-* Not Available
-* NA
-* NAN
-* Not Applicable
+* "Not Available"
+* "NA"
+* "NAN"
+* "Not Applicable"
 
 ## Completeness of flat files
 
 ```{r }
-plotCompleteness(df_surveys)
+plotCompleteness(df_surveys, "HCAHPS Completeness")
 ```
 
 ## Completeness of flat files
 ```{r}
-plotCompleteness(df_death)
+death_completeness <- completeness(df_death)
+death_completeness <- death_completeness[order(death_completeness$completeness),]
+  
+plot_df <- death_completeness
+
+plot_df$colname <- factor(plot_df$colname, as.character(plot_df$colname))
+
+ggplot(plot_df, aes(x=factor(colname), y=completeness)) + 
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    xlab("Column") + ylab("Completeness") + ggtitle("Readmission and Death Completeness")
+
+```
+
+## Completeness of flat files
+```{r}
+plot_df <- completeness(df_death_subset_ami)
+
+target <- death_completeness$colname
+plot_df <- plot_df[match(target, plot_df$colname),]
+
+plot_df$colname <- factor(plot_df$colname, as.character(plot_df$colname))
+
+ggplot(plot_df, aes(x=factor(colname), y=completeness)) + 
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    xlab("Column") + ylab("Completeness") + ggtitle("Readmission and Death Completeness - (AMI) Subset")
 ```
 
 ## Completeness by state
+```{r warning=FALSE, fig.width = 9, fig.height = 4.5}
+states_map <- map_data("state")
 
-```{r }
-ggplot(rbind(completeness_ami_by_state, completeness_by_state_all),
-       aes(x=reorder(State, completeness), y=completeness, color=subset_type)) +
-  geom_point(size=2) + theme(axis.text.x=element_blank())
+state_frame <- data.frame(State=state.abb, state=state.name)
+state_frame$state <- str_to_lower(state_frame$state)
+
+df <- inner_join(completeness_ami_by_state, state_frame, by="State")
+
+p <- ggplot(df, aes(map_id=state)) +
+  geom_map(aes(fill = completeness), map = states_map, color = "black", size = 0.25) +
+  expand_limits(x = states_map$long, y = states_map$lat) + xlab("Long") + ylab("Lat") +
+  ggtitle("Acute Myocardial Infarction (AMI) 30-Day Mortality Rate Completeness")
+
+p + coord_map()
 ```
 
 # Quantifying "Worst"
