@@ -1,7 +1,7 @@
 ---
-title: "Project 2 Hospitals and MI's"
-author: "Matthew McAvoy"
-date: "November 30, 2016"
+title: "Hospitals and MI's"
+author: "Caleb Dowdy, Charlie Edelson, Matthew McAvoy, Eric Voorhis"
+date: "December 1, 2016"
 output: ioslides_presentation
 ---
 
@@ -16,12 +16,18 @@ library(stringr)
 library(ggrepel)
 
 setwd("C:/Users/homur/OneDrive/New College/EDA/Project2")
-data <- read.csv("Data_concise/merged_data.csv")
+data1 <- read.csv("Data_concise/merged_data.csv")
+data <- read.csv("Data_concise/edelsonc_merged.csv")
+
+na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
+quests <- read_csv("Data/HCAHPS - Hospital.csv", na=na_list)
 ```
 # Introduction
 
 ## Statement of Thesis
-At the county level higher average ratings 
+Higher rated counties are better places to have heart attacks
+
+Significant finding - Found relationship between Death Score and Overall Rating
 
 ## Data 
 
@@ -31,6 +37,30 @@ At the county level higher average ratings
 - Medicare billing codes 
 - Center of Medicare & Medicaid Services
 - "Wide range of readers"
+
+## Granularity
+Data Comes in Three Levels
+
+- National
+- State
+- Hospital
+
+## Granularity
+Data Comes in Three Levels
+
+- National
+- State
+- Hospital
+
+Aggregated into County
+
+<ul>
+<li>National level too fuzzy, hospital too fine</li>
+<li>Averaging behavior </li>
+<ul>
+  <li>Halved Number Rows (4800 $\rightarrow$ 2000)</li>
+</ul>
+</ul>
 
 # Quantifying "Worst"
 
@@ -75,7 +105,7 @@ Location - US Counties.
 
 <span style="color:royalblue">$\downarrow$</span> Infects.score - Includes blood stream infections, UTI's, infections after surgery, and MRSA and C.Diff (Clostridium difficile) infections.
 
-<span style="color:orchid">$\uparrow$</span> Spends.Score - Medicare Hospital Spending per patient. (Larger better?)
+<span style="color:orchid">$\downarrow$</span> Spends.Score - Standardized Medicare Hospital Spending per patient. Less than 1 means Medicare is cheaper at this location, can be regarded as good.
 
 ## Variables
 <span style="color:steelblue">$\downarrow$</span> Images.score - Such imaging as Cat scans of abdomens, MRI's of spines, and mammography follow-up rates. Up or down?
@@ -85,7 +115,6 @@ Location - US Counties.
 <span style="color:blue">$\downarrow$</span> Deaths.Score - Retained measure Acute MI 30 day mortality rate. 
 
 <span style="color:cyan">$\downarrow$</span> Timely.Score -  Typically the number of minutes waited for treating MI's by use of fibrinolytic therapy, transfer to another facility for better treatent, Aspirin on arrival, or time to ECG.
-
 
 ## Relationship of overall score to groups, comparing top and bottom 20 counties
 ```{r}
@@ -98,42 +127,52 @@ bottom_top <- bind_rows(top_score %>% mutate(Rank = "Top"), bottom_score %>% mut
 
 ## Rank to Overall Score
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Overall.Score, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Overall.Score, color=Rank)) + ylab("Stars") + theme_minimal()
 ```
 
 ## Rank to Questionnaire Stars
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Quests.Stars, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Quests.Stars, color=Rank)) + ylab("Stars") + theme_classic()
 ```
 
 ## Rank to Complications
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Compl.Score, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Compl.Score, color=Rank)) + ylab("Score") + theme_classic()
 ```
 
 ## Rank to Infections Score
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Infects.Score, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Infects.Score, color=Rank)) + ylab("Score") + theme_classic()
 ```
 
 ## Rank to Spending Score
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Spends.Score, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Spends.Score, color=Rank)) + ylab("Score") + theme_classic()
 ```
 
 ## Rank to Payment Score
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Values.Payment, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Values.Payment, color=Rank)) + ylab("Score") + theme_classic()
 ```
 
 ## Rank to Deaths Score
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Deaths.Score, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Deaths.Score, color=Rank)) + ylab("Score") + theme_classic()
 ```
 
 ## Rank to Timely Score
 ```{r}
-ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Timely.Score, color=Rank))
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Timely.Score, color=Rank)) + ylab("Score") + theme_classic()
+```
+
+## Rank to Obesity Score
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Percent.Population.Obese, color=Rank)) + ylab("Score") + theme_classic()
+```
+
+## Rank to Median Income
+```{r}
+ggplot(data = bottom_top, aes(x=Rank)) + geom_boxplot(aes(y=Median.Income, color=Rank)) + ylab("Income") + theme_classic()
 ```
 
 ## Boxplot summary
@@ -144,21 +183,124 @@ Aggregated on States to find States with the best overall score and the lowest D
 ```{r}
 state_data <- data %>% mutate(State = str_extract(Location, "\\s..$"))
 state_score <- state_data %>% group_by(State) %>% summarise(State.Overall.Score = mean(Overall.Score), State.Deaths.Score = mean(Deaths.Score))
+# old
+color_green <- state_score %>% filter(str_detect(State, 'UT|RI|DE'))
+color_red <- state_score %>% filter(str_detect(State, 'AK|MS|WV|ND'))
+# new
+color_green <- state_score %>% filter(str_detect(State, 'ID|MT|DE|IN|MN'))
+color_red <- state_score %>% filter(str_detect(State, 'NY|NV|MS|NJ|FL'))
+```
+
+## County level by Overall Score
+```{r}
+top_five <- data %>% arrange(desc(Overall.Score)) %>% slice(1:5)
+bottom_five <- data %>% arrange(Overall.Score) %>% slice(1:5)
+ggplot(data = data, aes(x=Location, y=Overall.Score)) + 
+		geom_point(shape = 1, size = 2.5) + 
+    geom_text_repel(data=top_five, aes(label=Location), color="forestgreen", size = 4) + 
+    geom_text_repel(data=bottom_five, aes(label=Location), color="red", size = 4) + theme_minimal() + xlab("County") + ylab("Overall Score") + theme(axis.text.x=element_blank())
+```
+
+## County level by Death Score
+```{r}
+worst_five <- data %>% arrange(desc(Deaths.Score)) %>% slice(1:5)
+best_five <- data %>% arrange(Deaths.Score) %>% slice(1:5)
+ggplot(data = data, aes(x=Location, y=Deaths.Score)) + 
+		geom_point(shape = 1, size = 2.5) + 
+    geom_text_repel(data=best_five, aes(label=Location), color="forestgreen", size = 4)+ 
+    geom_text_repel(data=worst_five, aes(label=Location), color="red", size = 4) + theme_minimal() + xlab("County") + ylab("Death Score") +  theme(axis.text.x=element_blank()) 
 ```
 
 ## State level by Overall Score
 ```{r}
 ggplot(data = state_score, aes(x=State, y=State.Overall.Score)) + 
-		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4)
+		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4) + 
+		geom_point(data=color_green, aes(x=State, y=State.Overall.Score), color="forestgreen", shape= 16, size = 2.5) + 
+		geom_point(data=color_red, aes(x=State, y=State.Overall.Score), color="red", shape= 16, size = 2.5) + theme_minimal() + xlab("State") + ylab("Overall Score") + theme(axis.text.x=element_blank()) 
+
 ```
 
 ## State level by Death Score
 ```{r}
+worst_five <- state_score %>% arrange(desc(State.Deaths.Score)) %>% slice(1:5)
+best_five <- state_score %>% arrange(State.Deaths.Score) %>% slice(1:5)
 ggplot(data = state_score, aes(x=State, y=State.Deaths.Score)) + 
-		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4)
+		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=State), size = 4) + 
+		geom_point(data=best_five, aes(x=State, y=State.Deaths.Score), color="forestgreen", shape= 16, size = 2.5) + 
+		geom_point(data=worst_five, aes(x=State, y=State.Deaths.Score), color="red", shape= 16, size = 2.5) + theme_minimal() + xlab("State") + ylab("Death Score") + 
+		theme(axis.text.x=element_blank())
 ```
 
-## Summary of State level
-North Dakota has a very high death score and Rhode Island, Utah, and Delaware have a small death score.
 
+```{r include = FALSE}
+quests_q2 <- quests %>% filter(str_detect(`HCAHPS Measure ID`,'_SCORE')) %>% 
+		mutate(Location = paste(`County Name`, State)) %>% 
+		rename(Score = `HCAHPS Linear Mean Value`) %>%
+		rename(Question = `HCAHPS Answer Description`) %>%
+		select(Location, Question, Score) %>% filter(!is.na(Score)) %>%
+		mutate_each(funs(as.numeric), one_of(c("Score"))) %>% 
+		group_by(Question) %>% summarise(Quests.Score = mean(Score))
+```
+
+## National Questionnaire Performance 
+```{r}
+ggplot(data = quests_q2, aes(x=Question, y=Quests.Score)) + 
+		geom_point(shape = 1, size = 2.5) + geom_text_repel(aes(label=Question), size = 4) + 
+  theme_minimal() + xlab("Questions") + ylab("Score") + theme(axis.text.x=element_blank()) 
+```
+
+## Effect of Overall Rating on Death Score
+
+- Nice if Overall Rating was related to Death Score
+
+## Effect of Overall Rating on Death Score
+
+- Nice if Overall Rating was related to Death Score
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.1}
+library(tidyverse)
+na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
+df_c <- read_csv("Data_concise/edelsonc_merged.csv")
+
+
+ggplot(data=df_c, aes(x=Overall.Score, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Average County Overall Rating") + ylab("Death Score")
+```
+
+
+## Effect of Overall Rating on Death Score
+
+- Nice if Overall Rating was related to Death Score
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.1}
+library(tidyverse)
+na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
+df_c <- read_csv("Data_concise/edelsonc_merged.csv")
+
+
+ggplot(data=df_c, aes(x=Overall.Score, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Average County Overall Rating") + ylab("Death Score")
+```
+
+- Significant Intercept (t = 62.6, p < 2 x 10<sup>-16</sup>)
+- Significant Coefficient (t = -5.034, p< 6 x 10<sup>-7</sup>)
+- Bad R<sup>2</sup> (0.03); Strong F-stat (F = 25.42, p < 10<sup>-7</sup>)
+
+## Recurring Theme
+```{r, warning=FALSE, message= FALSE, echo=FALSE, fig.height=3.3}
+library(gridExtra)
+
+p1 <- ggplot(data=df_c, aes(x=Percent.Population.Obese, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Percent Obesity") + ylab("Death Score") + ggtitle("Obesity Percentage vs Death Score")
+
+p2 <- ggplot(data=df_c, aes(x=Median.Income, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm')+ xlab("Median Income") + ylab("Death Score") + ggtitle("Median Income vs Death Score")
+
+grid.arrange(p1, p2, ncol=2)
+```
+
+- Significant Intercepts and Significant Coefficients
+- Poor R<sup>2</sup> ( < 0.08) but Strong F-Statistic
+
+
+## Loss of data
+```{r}
+dim(data1); dim(data); dim(state_score)
+```
 
