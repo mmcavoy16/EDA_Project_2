@@ -18,6 +18,40 @@ library(ggrepel)
 setwd("C:/Users/homur/OneDrive/New College/EDA/Project2")
 data <- read.csv("Data_concise/merged_data.csv")
 ```
+# Introduction
+
+## Statement of Thesis
+At the county level higher average ratings 
+
+## Data 
+
+- Provided by Hospital Compare website
+    - Consists of a variety of metrics related to the performance measures 
+- Over 4,000 Medicare-certified hospitals are included in their databases
+- Medicare billing codes 
+- Center of Medicare & Medicaid Services
+- "Wide range of readers"
+
+# Quantifying "Worst"
+
+## Who is actually included? 
+An **Index Admission** is the hospitiliztion to which the mortality outcome is attributed and includes patients that meet the following criteria: 
+
+- Aged 65 or over
+- Enrolled in Original Medicare for 12 months prior to admission
+- Consistent or known vital status with clear demographic (age and gender data)
+- **Not** discharged against medical advice
+- **Not** transferred from another acute care facility
+- **Not** enrolled in Medicare hospice program any time in the 12 months prior to admission
+- **Many more special cases** ask us about it after...
+
+## What is the Death Score? 
+
+`RSMR` $= \frac{"predicted"}{"expected"}\times National \ NMR$ 
+
+- `predicted` : Number of deaths within 30 days based on the hospitals performance for a given patient mix 
+- `expected` : Number of deaths expected based on the national average for hospital performance with the same patient mix 
+- `NMR`: National mortality rate
 
 ## Overall Score
 <span style="color:midnightblue">$\uparrow$</span> Overall.Score - Summarizes more than 60 measures reported on Hospital Compare into a single rating. 
