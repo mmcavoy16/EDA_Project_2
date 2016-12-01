@@ -45,6 +45,13 @@ Data Comes in Three Levels
 - State
 - Hospital
 
+## Granularity
+Data Comes in Three Levels
+
+- National
+- State
+- Hospital
+
 Aggregated into County
 
 <ul>
@@ -63,7 +70,7 @@ Aggregated into County
 
 - Nice if Overall Rating was related to Death Score
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.1}
 setwd("/Users/edelsonc/Desktop/Data_Science/Group_EDA/EDA_Project_2/Data_concise")
 library(tidyverse)
 na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
@@ -73,9 +80,37 @@ df_c <- read_csv("edelsonc_merged.csv")
 ggplot(data=df_c, aes(x=Overall.Score, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Average County Overall Rating") + ylab("Death Score")
 ```
 
-***
 
-```{r, warning=FALSE, message=FALSE}
-lm_rd <- lm(Deaths.Score ~ Overall.Score, data=df_c)
-summary(lm_rd)
+## Effect of Overall Rating on Death Score
+
+- Nice if Overall Rating was related to Death Score
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.1}
+setwd("/Users/edelsonc/Desktop/Data_Science/Group_EDA/EDA_Project_2/Data_concise")
+library(tidyverse)
+na_list <- c("", " ", "Not Available", "NA", "NAN", "NaN")
+df_c <- read_csv("edelsonc_merged.csv")
+
+
+ggplot(data=df_c, aes(x=Overall.Score, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Average County Overall Rating") + ylab("Death Score")
 ```
+
+- Significant Intercept (t = 62.6, p < 2 x 10<sup>-16</sup>)
+- Significant Coefficient (t = -5.034, p< 6 x 10<sup>-7</sup>)
+- Bad R<sup>2</sup> (0.03); Strong F-stat (F = 25.42, p < 10<sup>-7</sup>)
+
+## Recurring Theme
+```{r, warnings=FALSE, message= FALSE, echo=FALSE, fig.height=3.3}
+library(gridExtra)
+
+p1 <- ggplot(data=df_c, aes(x=Percent.Population.Obese, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm') + xlab("Percent Obesity") + ylab("Death Score") + ggtitle("Obesity Percentage vs Death Score")
+
+p2 <- ggplot(data=df_c, aes(x=Median.Income, y=Deaths.Score)) + geom_point() + geom_smooth(method='lm')+ xlab("Median Income") + ylab("Death Score") + ggtitle("Median Income vs Death Score")
+
+grid.arrange(p1, p2, ncol=2)
+```
+
+- Significant Intercepts and Significant Coefficients
+- Poor R<sup>2</sup> ( < 0.08) but Strong F-Statistic
+
+
